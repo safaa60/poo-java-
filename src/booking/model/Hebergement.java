@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+
 public abstract class Hebergement implements Reservable, Comparable<Hebergement> {
 
     private final int id;
@@ -156,4 +157,3 @@ public abstract class Hebergement implements Reservable, Comparable<Hebergement>
         return "#" + id + " " + nom + " (" + type + ") - " + prixParNuit + " €/nuit - note " + String.format("%.2f", moyenneNotes);
     }
 }
-
