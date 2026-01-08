@@ -22,7 +22,6 @@ public class Periode {
     }
 
     public boolean chevauche(LocalDate d, LocalDate f) {
-        // chevauche si (debut < f) et (fin > d)
         return debut.isBefore(f) && fin.isAfter(d);
     }
 
