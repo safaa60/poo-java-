@@ -4,30 +4,22 @@ import booking.model.*;
 import booking.users.*;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.time.LocalDate;
-import java.util.List;
 
 public class BookingApp extends JFrame {
 
     private final CollectionHebergements col = new CollectionHebergements();
+
+    // ✅ On crée un NouveauClient avec le constructeur QUI EXISTE chez toi.
+    // Si ton NouveauClient a 3 paramètres (nom, prenom, email), c'est OK.
     private final NouveauClient client = new NouveauClient("Dupont", "Lina", "lina@mail.com");
 
-    // UI
     private final DefaultListModel<Hebergement> listModel = new DefaultListModel<>();
     private final JList<Hebergement> list = new JList<>(listModel);
-
     private final JTextArea details = new JTextArea();
-    private final JTextArea dispoArea = new JTextArea();
 
-    // filtres
-    private final JComboBox<String> cbType = new JComboBox<>(new String[]{"TOUS", "HOTEL", "APPARTEMENT", "VILLA"});
-    private final JTextField tfPrixMax = new JTextField("0");
-    private final JTextField tfCapMin = new JTextField("0");
-
-    // réservation
     private final JTextField tfDebut = new JTextField("2026-01-12");
     private final JTextField tfFin = new JTextField("2026-01-15");
     private final JTextField tfNb = new JTextField("2");
@@ -36,18 +28,13 @@ public class BookingApp extends JFrame {
             new DefaultTableModel(new Object[]{"ID", "Statut", "Début", "Fin", "Prix"}, 0) {
                 @Override public boolean isCellEditable(int r, int c) { return false; }
             };
+
     private final JTable table = new JTable(tableModel);
 
     public BookingApp() {
-        super("Mini-Booking (Swing - Design + Dispos + Filtres)");
-
-        // ✅ Look moderne
-        try {
-            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-        } catch (Exception ignored) {}
-
+        super("Mini-Booking (Swing - version compatible)");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(1100, 700);
+        setSize(1000, 600);
         setLocationRelativeTo(null);
 
         seedData();
@@ -64,14 +51,8 @@ public class BookingApp extends JFrame {
         h1.ajouterEquipement("WiFi");
         h1.ajouterEquipement("TV");
         h1.ajouterPeriodeDisponible(LocalDate.of(2026, 1, 10), LocalDate.of(2026, 2, 10));
-        h1.ajouterPeriodeDisponible(LocalDate.of(2026, 3, 1), LocalDate.of(2026, 3, 20));
         h1.ajouterNote(4);
         h1.ajouterNote(5);
-
-        ChambreHotel h4 = new ChambreHotel(4, "Hotel Marseille Vieux-Port", "20 quai du Port", 3, 85, "Bon rapport qualité/prix", 2);
-        h4.ajouterEquipement("WiFi");
-        h4.ajouterPeriodeDisponible(LocalDate.of(2026, 1, 5), LocalDate.of(2026, 1, 25));
-        h4.ajouterNote(4);
 
         Appartement h2 = new Appartement(2, "Appart Lyon", "2 place Bellecour", 4, 90, "Appartement pratique", 2);
         h2.ajouterEquipement("Cuisine");
@@ -86,70 +67,29 @@ public class BookingApp extends JFrame {
         col.ajouter(h1);
         col.ajouter(h2);
         col.ajouter(h3);
-        col.ajouter(h4);
     }
 
     // ------------------ UI ------------------
     private void buildUI() {
-        JPanel root = new JPanel(new BorderLayout(10, 10));
-        root.setBorder(new EmptyBorder(10,10,10,10));
-        setContentPane(root);
+        setLayout(new BorderLayout(10, 10));
 
-        // ========= LEFT : filtres + liste =========
-        JPanel left = new JPanel(new BorderLayout(10,10));
-        left.setBorder(BorderFactory.createTitledBorder("Recherche & Hébergements"));
-        left.setPreferredSize(new Dimension(420, 0));
-
-        JPanel filters = new JPanel(new GridLayout(3,2,8,8));
-        filters.add(new JLabel("Type"));
-        filters.add(cbType);
-        filters.add(new JLabel("Prix max (0 = ignore)"));
-        filters.add(tfPrixMax);
-        filters.add(new JLabel("Capacité min (0 = ignore)"));
-        filters.add(tfCapMin);
-
-        JPanel filterButtons = new JPanel(new GridLayout(1,2,8,8));
-        JButton btnSearch = new JButton("Rechercher");
-        JButton btnSort = new JButton("Trier par prix");
-        filterButtons.add(btnSearch);
-        filterButtons.add(btnSort);
-
-        JPanel northLeft = new JPanel(new BorderLayout(8,8));
-        northLeft.add(filters, BorderLayout.CENTER);
-        northLeft.add(filterButtons, BorderLayout.SOUTH);
-
-        left.add(northLeft, BorderLayout.NORTH);
-
+        // LEFT
+        JPanel left = new JPanel(new BorderLayout());
+        left.setBorder(BorderFactory.createTitledBorder("Hébergements"));
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        list.setVisibleRowCount(12);
         left.add(new JScrollPane(list), BorderLayout.CENTER);
+        left.setPreferredSize(new Dimension(380, 0));
+        add(left, BorderLayout.WEST);
 
-        root.add(left, BorderLayout.WEST);
+        // CENTER
+        JPanel center = new JPanel(new BorderLayout(10, 10));
+        center.setBorder(BorderFactory.createTitledBorder("Détails"));
 
-        // ========= CENTER : détails + dispos =========
-        JPanel center = new JPanel(new GridLayout(1,2,10,10));
-
-        JPanel detailsPanel = new JPanel(new BorderLayout());
-        detailsPanel.setBorder(BorderFactory.createTitledBorder("Détails"));
         details.setEditable(false);
         details.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-        detailsPanel.add(new JScrollPane(details), BorderLayout.CENTER);
+        center.add(new JScrollPane(details), BorderLayout.CENTER);
 
-        JPanel dispoPanel = new JPanel(new BorderLayout());
-        dispoPanel.setBorder(BorderFactory.createTitledBorder("Disponibilités"));
-        dispoArea.setEditable(false);
-        dispoArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-        dispoPanel.add(new JScrollPane(dispoArea), BorderLayout.CENTER);
-
-        center.add(detailsPanel);
-        center.add(dispoPanel);
-
-        root.add(center, BorderLayout.CENTER);
-
-        // ========= SOUTH : réservation + réservations =========
-        JPanel south = new JPanel(new BorderLayout(10,10));
-
-        JPanel reserve = new JPanel(new GridLayout(2,5,8,8));
+        JPanel reserve = new JPanel(new GridLayout(2, 4, 6, 6));
         reserve.setBorder(BorderFactory.createTitledBorder("Réserver (YYYY-MM-DD)"));
 
         JButton btnDispo = new JButton("Vérifier dispo");
@@ -159,36 +99,31 @@ public class BookingApp extends JFrame {
         reserve.add(new JLabel("Fin"));
         reserve.add(new JLabel("Nb personnes"));
         reserve.add(new JLabel(""));
-        reserve.add(new JLabel(""));
-
         reserve.add(tfDebut);
         reserve.add(tfFin);
         reserve.add(tfNb);
-        reserve.add(btnDispo);
         reserve.add(btnReserver);
 
-        south.add(reserve, BorderLayout.NORTH);
+        JPanel reserveWrap = new JPanel(new BorderLayout());
+        reserveWrap.add(reserve, BorderLayout.CENTER);
+        reserveWrap.add(btnDispo, BorderLayout.EAST);
 
-        JPanel bookingPanel = new JPanel(new BorderLayout(6,6));
-        bookingPanel.setBorder(BorderFactory.createTitledBorder("Mes réservations"));
-        table.setRowHeight(24);
-        bookingPanel.add(new JScrollPane(table), BorderLayout.CENTER);
+        center.add(reserveWrap, BorderLayout.SOUTH);
+        add(center, BorderLayout.CENTER);
 
+        // BOTTOM
+        JPanel bottom = new JPanel(new BorderLayout());
+        bottom.setBorder(BorderFactory.createTitledBorder("Mes réservations"));
+
+        bottom.add(new JScrollPane(table), BorderLayout.CENTER);
         JButton btnAnnuler = new JButton("Annuler la réservation sélectionnée");
-        bookingPanel.add(btnAnnuler, BorderLayout.SOUTH);
+        bottom.add(btnAnnuler, BorderLayout.SOUTH);
 
-        south.add(bookingPanel, BorderLayout.CENTER);
+        add(bottom, BorderLayout.SOUTH);
 
-        root.add(south, BorderLayout.SOUTH);
-
-        // ========= EVENTS =========
-        btnSearch.addActionListener(e -> refreshHebergements());
-        btnSort.addActionListener(e -> { col.trierParPrix(); refreshHebergements(); });
-
+        // EVENTS
         list.addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
-                showDetailsAndDispos();
-            }
+            if (!e.getValueIsAdjusting()) showDetails();
         });
 
         btnDispo.addActionListener(e -> verifierDispo());
@@ -196,71 +131,32 @@ public class BookingApp extends JFrame {
         btnAnnuler.addActionListener(e -> annulerReservation());
     }
 
-    // ------------------ Data refresh ------------------
+    // ------------------ Actions ------------------
     private void refreshHebergements() {
         listModel.clear();
-
-        String type = (String) cbType.getSelectedItem();
-        if ("TOUS".equals(type)) type = ""; // ignore
-
-        double prixMax = parseDouble(tfPrixMax.getText().trim());
-        int capMin = parseInt(tfCapMin.getText().trim());
-
-        List<Hebergement> res = col.rechercher(type, prixMax, capMin);
-        for (Hebergement h : res) listModel.addElement(h);
-
-        if (!listModel.isEmpty()) list.setSelectedIndex(0);
-        showDetailsAndDispos();
+        for (Hebergement h : col.lister()) listModel.addElement(h);
     }
 
-    private void showDetailsAndDispos() {
+    private void showDetails() {
         Hebergement h = list.getSelectedValue();
         if (h == null) {
             details.setText("");
-            dispoArea.setText("");
             return;
         }
 
-        // Détails généraux
-        StringBuilder sb = new StringBuilder();
-        sb.append("ID: ").append(h.getId()).append("\n");
-        sb.append("Nom: ").append(h.getNom()).append("\n");
-        sb.append("Type: ").append(h.getType()).append("\n");
-        sb.append("Adresse: ").append(h.getAdresse()).append("\n");
-        sb.append("Capacité: ").append(h.getCapacite()).append("\n");
-        sb.append("Prix/nuit: ").append(h.getPrixParNuit()).append("€\n");
-        sb.append("Note moyenne: ").append(String.format("%.2f", h.getMoyenneNotes())).append("/5\n");
+        // ✅ Comme detailsTexte() n'existe pas chez toi, on affiche simple
+        String txt =
+                "ID: " + h.getId() + "\n" +
+                "Nom: " + h.getNom() + "\n" +
+                "Type: " + h.getType() + "\n" +
+                "Adresse: " + h.getAdresse() + "\n" +
+                "Capacité: " + h.getCapacite() + "\n" +
+                "Prix/nuit: " + h.getPrixParNuit() + "€\n" +
+                "Note moyenne: " + String.format("%.2f", h.getMoyenneNotes()) + "/5\n";
 
-        // Bonus : infos spécifiques selon sous-classe
-        if (h instanceof ChambreHotel ch) {
-            sb.append("Étoiles: ").append(ch.getEtoiles()).append("\n");
-        } else if (h instanceof Appartement ap) {
-            sb.append("Étage: ").append(ap.getEtage()).append("\n");
-        } else if (h instanceof Villa v) {
-            sb.append("Piscine: ").append(v.isPiscine() ? "Oui" : "Non").append("\n");
-        }
-
-        details.setText(sb.toString());
-
-        // Disponibilités
-        try {
-            StringBuilder sd = new StringBuilder();
-            List<Periode> dispos = h.getDisponibilites();
-            if (dispos.isEmpty()) {
-                sd.append("Aucune période disponible.\n");
-            } else {
-                sd.append("Périodes disponibles:\n");
-                for (Periode p : dispos) {
-                    sd.append(" - ").append(p).append("\n");
-                }
-            }
-            dispoArea.setText(sd.toString());
-        } catch (Exception ex) {
-            dispoArea.setText("Impossible d'afficher les dispos.\nAjoute getDisponibilites() dans Hebergement.");
-        }
+        details.setText(txt);
     }
 
-    // ------------------ Booking actions ------------------
     private void verifierDispo() {
         Hebergement h = list.getSelectedValue();
         if (h == null) return;
@@ -284,7 +180,7 @@ public class BookingApp extends JFrame {
             LocalDate f = LocalDate.parse(tfFin.getText().trim());
             int nb = Integer.parseInt(tfNb.getText().trim());
 
-            // chez toi: void -> on ne récupère pas un objet
+            // ✅ Chez toi, reserver() retourne void -> donc on ne récupère rien
             client.reserver(h, d, f, nb);
 
             JOptionPane.showMessageDialog(this, "✅ Réservation effectuée");
@@ -314,28 +210,24 @@ public class BookingApp extends JFrame {
             return;
         }
 
+        // on lit l'id (optionnel, mais on garde ta logique d'annulation existante)
+        int id = (int) tableModel.getValueAt(row, 0);
+
+        // on appelle ta méthode existante: annulerReservation(Client, LocalDate)
+        // (elle annule la première réservation future du client)
         Hebergement h = list.getSelectedValue();
         if (h == null) {
-            JOptionPane.showMessageDialog(this, "Sélectionne un hébergement à gauche.");
+            JOptionPane.showMessageDialog(this, "Sélectionne aussi un hébergement dans la liste à gauche.");
             return;
         }
 
         try {
-            // ta méthode: annule la réservation future du client
             h.annulerReservation(client, LocalDate.now());
-            JOptionPane.showMessageDialog(this, "✅ Annulation demandée");
+            JOptionPane.showMessageDialog(this, "✅ Annulation demandée (id=" + id + ")");
             refreshReservations();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Erreur : " + ex.getMessage());
         }
-    }
-
-    private static double parseDouble(String s) {
-        try { return Double.parseDouble(s); } catch (Exception e) { return 0; }
-    }
-
-    private static int parseInt(String s) {
-        try { return Integer.parseInt(s); } catch (Exception e) { return 0; }
     }
 
     // ------------------ MAIN ------------------
