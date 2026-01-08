@@ -164,7 +164,7 @@ public class BookingApp extends JFrame {
             LocalDate f = LocalDate.parse(tfFin.getText().trim());
             int nb = Integer.parseInt(tfNb.getText().trim());
 
-            Reservation r = client.reserver(h, d, f, nb); // ton code client doit avoir cette méthode
+            Reservation r = client.reserver(h, d, f, nb);
             JOptionPane.showMessageDialog(this, "✅ Réservation OK : " + r);
 
             refreshReservationsTable();

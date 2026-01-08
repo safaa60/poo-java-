@@ -33,7 +33,6 @@ public abstract class Hebergement implements Reservable, Comparable<Hebergement>
         this.description = description;
     }
 
-    // ---------- Disponibilités ----------
     public void ajouterPeriodeDisponible(LocalDate debut, LocalDate fin) {
         disponibilites.add(new Periode(debut, fin));
     }
@@ -63,7 +62,7 @@ public abstract class Hebergement implements Reservable, Comparable<Hebergement>
                 .anyMatch(r -> r.getPeriode().contient(date));
     }
 
-    // ---------- Prix ----------
+    //Prix total pour une période
     public double calculerPrixTotal(LocalDate debut, LocalDate fin) {
         long nuits = ChronoUnit.DAYS.between(debut, fin);
         return nuits * prixParNuit;
@@ -77,7 +76,6 @@ public abstract class Hebergement implements Reservable, Comparable<Hebergement>
         return calculerPrixTotal(debut, fin);
     }
 
-    // ---------- Notes ----------
     public void ajouterNote(int noteSur5) {
         if (noteSur5 < 1 || noteSur5 > 5) throw new IllegalArgumentException("Note entre 1 et 5.");
         notes.add(noteSur5);
@@ -88,7 +86,7 @@ public abstract class Hebergement implements Reservable, Comparable<Hebergement>
 
     public double getMoyenneNotes() { return moyenneNotes; }
 
-    // ---------- Réservation ----------
+    //Reservations
     @Override
     public void reserver(Client c, LocalDate debut, LocalDate fin, int nbPersonnes) {
         if (!estDisponible(debut, fin)) {
@@ -97,14 +95,13 @@ public abstract class Hebergement implements Reservable, Comparable<Hebergement>
         double prix = calculerPrix(debut, fin, nbPersonnes);
 
         Reservation r = new Reservation(Reservation.nextId(), c, this, debut, fin, prix);
-        r.confirmer(); // simple : on confirme direct
+        r.confirmer();
         reservations.add(r);
         c.ajouterReservation(r);
     }
 
     @Override
     public void annulerReservation(Client c, LocalDate dateAnnulation) {
-        // simple : annule la 1ère réservation future de ce client
         for (Reservation r : reservations) {
             if (r.getClient().equals(c) && r.getStatut() == StatutReservation.CONFIRMEE) {
                 if (dateAnnulation.isBefore(r.getDebut())) {
@@ -116,7 +113,7 @@ public abstract class Hebergement implements Reservable, Comparable<Hebergement>
         throw new IllegalStateException("Aucune réservation future à annuler pour ce client.");
     }
 
-    // ---------- Affichage ----------
+    //affichage
     @Override
     public void afficherDetails() {
         System.out.println("=== Hébergement #" + id + " (" + type + ") ===");
@@ -130,13 +127,12 @@ public abstract class Hebergement implements Reservable, Comparable<Hebergement>
         System.out.println("Disponibilités: " + (disponibilites.isEmpty() ? "-" : disponibilites));
     }
 
-    // ---------- Comparable (tri simple par prix) ----------
     @Override
     public int compareTo(Hebergement other) {
         return Double.compare(this.prixParNuit, other.prixParNuit);
     }
 
-    // ---------- getters ----------
+    //GETTERS
     @Override public int getId() { return id; }
     @Override public String getType() { return type; }
     @Override public int getCapacite() { return capacite; }
@@ -145,7 +141,7 @@ public abstract class Hebergement implements Reservable, Comparable<Hebergement>
     public String getNom() { return nom; }
     public String getAdresse() { return adresse; }
 
-    // ---------- petits setters utiles admin ----------
+    //SETTERS
     public void setNom(String nom) { this.nom = nom; }
     public void setAdresse(String adresse) { this.adresse = adresse; }
     public void setCapacite(int capacite) { this.capacite = capacite; }

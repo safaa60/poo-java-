@@ -12,13 +12,12 @@ public class Reservation {
     private final Reservable hebergement;
     private final Periode periode;
     private double prixTotal;
-    private double tauxReduction; // ex: 0.10 = 10%
+    private double tauxReduction;
 
     public static int nextId() {
         return SEQ++;
     }
 
-    // ✅ UN SEUL constructeur, PUBLIC, exactement celui que tu utilises partout
     public Reservation(int id, Client client, Reservable hebergement, LocalDate debut, LocalDate fin, double prixTotal) {
         this.id = id;
         this.client = client;

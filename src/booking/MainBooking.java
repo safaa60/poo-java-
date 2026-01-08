@@ -11,7 +11,6 @@ public class MainBooking {
 
         System.out.println("=== MINI BOOKING (console) ===\n");
 
-        // --------- Données (hébergements) ----------
         CollectionHebergements col = new CollectionHebergements();
 
         ChambreHotel h1 = new ChambreHotel(1, "Hotel Paris Centre", "10 rue de Paris", 2, 120, "Chambre cosy", 3);
@@ -35,9 +34,6 @@ public class MainBooking {
         col.ajouter(h2);
         col.ajouter(h3);
 
-        // =======================
-        // Scénario 1 : NouveauClient
-        // =======================
         System.out.println("----- Scénario 1 -----");
         NouveauClient nc = new NouveauClient("Dupont", "Lina", "lina@mail.com");
         nc.inscription("1234");
@@ -61,15 +57,12 @@ public class MainBooking {
             for (Reservation r : nc.getReservations()) System.out.println(" - " + r);
         }
 
-        // =======================
-        // Scénario 2 : AncienClient (réduc + annulation)
-        // =======================
+
         System.out.println("\n----- Scénario 2 -----");
         AncienClient ac = new AncienClient("Martin", "Alex", "alex@mail.com", "pass");
         ac.connexion("alex@mail.com", "pass");
 
         // on lui ajoute 2 "anciennes réservations" juste pour activer la réduction
-        // (dans un vrai projet, ça viendrait d’un historique)
         ac.ajouterReservation(new Reservation(Reservation.nextId(), ac, h2,
                 LocalDate.of(2025,10,1), LocalDate.of(2025,10,3), 180));
         ac.ajouterReservation(new Reservation(Reservation.nextId(), ac, h2,
@@ -89,9 +82,7 @@ public class MainBooking {
         System.out.println("Réservations du client après annulation :");
         for (Reservation r : ac.getReservations()) System.out.println(" - " + r);
 
-        // =======================
-        // Scénario 3 : Administrateur (ajout/modif/suppr + tri)
-        // =======================
+       
         System.out.println("\n----- Scénario 3 -----");
         Administrateur admin = new Administrateur("Admin", "Super", "admin@mail.com");
 
@@ -116,9 +107,8 @@ public class MainBooking {
         System.out.println("\nListe FINALE :");
         for (Hebergement h : col.lister()) System.out.println(" - " + h);
 
-        // Polymorphisme (petite preuve)
         System.out.println("\n--- Polymorphisme (Reservable) ---");
-        Reservable r = h1; // h1 est une ChambreHotel mais on le manipule via Reservable
+        Reservable r = h1; 
         System.out.println("Disponible le 2026-01-12 -> 2026-01-13 ? " + r.estDisponible(LocalDate.of(2026,1,12), LocalDate.of(2026,1,13)));
     }
 }

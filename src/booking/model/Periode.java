@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 public class Periode {
     private final LocalDate debut;
-    private final LocalDate fin; // fin exclusive (ex: du 10 au 12 => nuits 10->11 et 11->12)
+    private final LocalDate fin; 
 
     public Periode(LocalDate debut, LocalDate fin) {
         if (debut == null || fin == null || !debut.isBefore(fin)) {
