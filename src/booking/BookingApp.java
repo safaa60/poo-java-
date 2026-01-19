@@ -10,227 +10,171 @@ import java.time.LocalDate;
 
 public class BookingApp extends JFrame {
 
-    private final CollectionHebergements col = new CollectionHebergements();
+    private CollectionHebergements col = new CollectionHebergements();
+    private Client client = new NouveauClient("Lina", "Dupont", "lina@mail.com", "1234");
 
-    // ✅ On crée un NouveauClient avec le constructeur QUI EXISTE chez toi.
-    // Si ton NouveauClient a 3 paramètres (nom, prenom, email), c'est OK.
-    private final NouveauClient client = new NouveauClient("Dupont", "Lina", "lina@mail.com");
+    private JList<Hebergement> listHebergements;
+    private DefaultListModel<Hebergement> listModel;
 
-    private final DefaultListModel<Hebergement> listModel = new DefaultListModel<>();
-    private final JList<Hebergement> list = new JList<>(listModel);
-    private final JTextArea details = new JTextArea();
+    private JTextField tfDebut;
+    private JTextField tfFin;
+    private JSpinner spNb;
 
-    private final JTextField tfDebut = new JTextField("2026-01-12");
-    private final JTextField tfFin = new JTextField("2026-01-15");
-    private final JTextField tfNb = new JTextField("2");
-
-    private final DefaultTableModel tableModel =
-            new DefaultTableModel(new Object[]{"ID", "Statut", "Début", "Fin", "Prix"}, 0) {
-                @Override public boolean isCellEditable(int r, int c) { return false; }
-            };
-
-    private final JTable table = new JTable(tableModel);
+    private JTable table;
+    private DefaultTableModel tableModel;
 
     public BookingApp() {
-        super("Mini-Booking (Swing - version compatible)");
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(1000, 600);
+        setTitle("Mini-Booking (Swing - version compatible)");
+        setSize(900, 600);
         setLocationRelativeTo(null);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         seedData();
         buildUI();
-        refreshHebergements();
-        refreshReservations();
-
-        if (!listModel.isEmpty()) list.setSelectedIndex(0);
     }
 
-    // ------------------ Données de test ------------------
-    private void seedData() {
-        ChambreHotel h1 = new ChambreHotel(1, "Hotel Paris Centre", "10 rue de Paris", 2, 120, "Chambre cosy", 3);
-        h1.ajouterEquipement("WiFi");
-        h1.ajouterEquipement("TV");
-        h1.ajouterPeriodeDisponible(LocalDate.of(2026, 1, 10), LocalDate.of(2026, 2, 10));
-        h1.ajouterNote(4);
-        h1.ajouterNote(5);
-
-        Appartement h2 = new Appartement(2, "Appart Lyon", "2 place Bellecour", 4, 90, "Appartement pratique", 2);
-        h2.ajouterEquipement("Cuisine");
-        h2.ajouterPeriodeDisponible(LocalDate.of(2026, 1, 5), LocalDate.of(2026, 2, 20));
-        h2.ajouterNote(3);
-
-        Villa h3 = new Villa(3, "Villa Nice", "1 avenue de la Mer", 6, 200, "Vue mer", true);
-        h3.ajouterEquipement("Piscine");
-        h3.ajouterPeriodeDisponible(LocalDate.of(2026, 1, 15), LocalDate.of(2026, 3, 1));
-        h3.ajouterNote(5);
-
-        col.ajouter(h1);
-        col.ajouter(h2);
-        col.ajouter(h3);
-    }
-
-    // ------------------ UI ------------------
     private void buildUI() {
         setLayout(new BorderLayout(10, 10));
 
-        // LEFT
-        JPanel left = new JPanel(new BorderLayout());
-        left.setBorder(BorderFactory.createTitledBorder("Hébergements"));
-        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        left.add(new JScrollPane(list), BorderLayout.CENTER);
-        left.setPreferredSize(new Dimension(380, 0));
-        add(left, BorderLayout.WEST);
+        // ====== HAUT ======
+        JPanel top = new JPanel(new BorderLayout(10, 10));
 
-        // CENTER
-        JPanel center = new JPanel(new BorderLayout(10, 10));
-        center.setBorder(BorderFactory.createTitledBorder("Détails"));
-
-        details.setEditable(false);
-        details.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-        center.add(new JScrollPane(details), BorderLayout.CENTER);
-
-        JPanel reserve = new JPanel(new GridLayout(2, 4, 6, 6));
-        reserve.setBorder(BorderFactory.createTitledBorder("Réserver (YYYY-MM-DD)"));
-
-        JButton btnDispo = new JButton("Vérifier dispo");
-        JButton btnReserver = new JButton("Réserver");
-
-        reserve.add(new JLabel("Début"));
-        reserve.add(new JLabel("Fin"));
-        reserve.add(new JLabel("Nb personnes"));
-        reserve.add(new JLabel(""));
-        reserve.add(tfDebut);
-        reserve.add(tfFin);
-        reserve.add(tfNb);
-        reserve.add(btnReserver);
-
-        JPanel reserveWrap = new JPanel(new BorderLayout());
-        reserveWrap.add(reserve, BorderLayout.CENTER);
-        reserveWrap.add(btnDispo, BorderLayout.EAST);
-
-        center.add(reserveWrap, BorderLayout.SOUTH);
-        add(center, BorderLayout.CENTER);
-
-        // BOTTOM
-        JPanel bottom = new JPanel(new BorderLayout());
-        bottom.setBorder(BorderFactory.createTitledBorder("Mes réservations"));
-
-        bottom.add(new JScrollPane(table), BorderLayout.CENTER);
-        JButton btnAnnuler = new JButton("Annuler la réservation sélectionnée");
-        bottom.add(btnAnnuler, BorderLayout.SOUTH);
-
-        add(bottom, BorderLayout.SOUTH);
-
-        // EVENTS
-        list.addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) showDetails();
-        });
-
-        btnDispo.addActionListener(e -> verifierDispo());
-        btnReserver.addActionListener(e -> reserver());
-        btnAnnuler.addActionListener(e -> annulerReservation());
-    }
-
-    // ------------------ Actions ------------------
-    private void refreshHebergements() {
-        listModel.clear();
+        // Liste hébergements
+        listModel = new DefaultListModel<>();
         for (Hebergement h : col.lister()) listModel.addElement(h);
+
+        listHebergements = new JList<>(listModel);
+        top.add(new JScrollPane(listHebergements), BorderLayout.CENTER);
+
+        // Réserver
+        JPanel reservePanel = new JPanel(new GridLayout(2, 5, 5, 5));
+        reservePanel.setBorder(BorderFactory.createTitledBorder("Réserver (YYYY-MM-DD)"));
+
+        tfDebut = new JTextField("2026-01-12");
+        tfFin = new JTextField("2026-01-15");
+
+        spNb = new JSpinner(new SpinnerNumberModel(1, 1, 20, 1));
+
+        JButton btnCheck = new JButton("Vérifier dispo");
+        JButton btnReserve = new JButton("Réserver");
+
+        reservePanel.add(new JLabel("Début"));
+        reservePanel.add(new JLabel("Fin"));
+        reservePanel.add(new JLabel("Nb personnes"));
+        reservePanel.add(new JLabel(""));
+        reservePanel.add(new JLabel(""));
+
+        reservePanel.add(tfDebut);
+        reservePanel.add(tfFin);
+        reservePanel.add(spNb);
+        reservePanel.add(btnReserve);
+        reservePanel.add(btnCheck);
+
+        top.add(reservePanel, BorderLayout.SOUTH);
+
+        add(top, BorderLayout.NORTH);
+
+        // ====== TABLE ======
+        tableModel = new DefaultTableModel(
+                new Object[]{"ID", "Statut", "Début", "Fin", "Prix"}, 0
+        );
+        table = new JTable(tableModel);
+        add(new JScrollPane(table), BorderLayout.CENTER);
+
+        JButton btnCancel = new JButton("Annuler la réservation sélectionnée");
+        add(btnCancel, BorderLayout.SOUTH);
+
+        // ====== EVENTS ======
+        btnReserve.addActionListener(e -> reserver());
+        btnCheck.addActionListener(e -> verifier());
+        btnCancel.addActionListener(e -> annuler());
     }
 
-    private void showDetails() {
-        Hebergement h = list.getSelectedValue();
-        if (h == null) {
-            details.setText("");
-            return;
-        }
+    // =========================
+    // PLUS DE CHOIX + CAPACITÉS
+    // =========================
+    private void seedData() {
 
-        // ✅ Comme detailsTexte() n'existe pas chez toi, on affiche simple
-        String txt =
-                "ID: " + h.getId() + "\n" +
-                "Nom: " + h.getNom() + "\n" +
-                "Type: " + h.getType() + "\n" +
-                "Adresse: " + h.getAdresse() + "\n" +
-                "Capacité: " + h.getCapacite() + "\n" +
-                "Prix/nuit: " + h.getPrixParNuit() + "€\n" +
-                "Note moyenne: " + String.format("%.2f", h.getMoyenneNotes()) + "/5\n";
+        // Hotels
+        ChambreHotel h1 = new ChambreHotel(1, "Hotel Paris Centre", "Paris", 2, 120, "Cosy", 3);
+        ChambreHotel h2 = new ChambreHotel(2, "Hotel Marseille Port", "Marseille", 4, 90, "Familial", 2);
+        ChambreHotel h3 = new ChambreHotel(3, "Hotel Lyon Part-Dieu", "Lyon", 6, 140, "Grandes chambres", 4);
 
-        details.setText(txt);
-    }
+        // Appartements
+        Appartement a1 = new Appartement(4, "Appart Lyon", "Bellecour", 4, 80, "Centre ville", 2);
+        Appartement a2 = new Appartement(5, "Appart Paris 15e", "Paris", 6, 110, "Spacieux", 3);
 
-    private void verifierDispo() {
-        Hebergement h = list.getSelectedValue();
-        if (h == null) return;
+        // Villas
+        Villa v1 = new Villa(6, "Villa Nice", "Nice", 8, 200, "Vue mer", true);
+        Villa v2 = new Villa(7, "Villa Bordeaux", "Bordeaux", 10, 180, "Grande villa", false);
 
-        try {
-            LocalDate d = LocalDate.parse(tfDebut.getText().trim());
-            LocalDate f = LocalDate.parse(tfFin.getText().trim());
-            boolean ok = h.estDisponible(d, f);
-            JOptionPane.showMessageDialog(this, ok ? "✅ Disponible" : "❌ Indisponible");
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erreur : " + ex.getMessage());
+        // périodes
+        LocalDate d1 = LocalDate.of(2026, 1, 1);
+        LocalDate d2 = LocalDate.of(2026, 12, 31);
+
+        for (Hebergement h : new Hebergement[]{h1,h2,h3,a1,a2,v1,v2}) {
+            h.ajouterPeriodeDisponible(d1, d2);
+            col.ajouter(h);
         }
     }
 
     private void reserver() {
-        Hebergement h = list.getSelectedValue();
-        if (h == null) return;
-
         try {
-            LocalDate d = LocalDate.parse(tfDebut.getText().trim());
-            LocalDate f = LocalDate.parse(tfFin.getText().trim());
-            int nb = Integer.parseInt(tfNb.getText().trim());
+            Hebergement h = listHebergements.getSelectedValue();
+            if (h == null) {
+                JOptionPane.showMessageDialog(this, "Sélectionne un hébergement");
+                return;
+            }
 
-            // ✅ Chez toi, reserver() retourne void -> donc on ne récupère rien
-            client.reserver(h, d, f, nb);
+            LocalDate debut = LocalDate.parse(tfDebut.getText());
+            LocalDate fin = LocalDate.parse(tfFin.getText());
+            int nb = (int) spNb.getValue();
 
-            JOptionPane.showMessageDialog(this, "✅ Réservation effectuée");
-            refreshReservations();
+            client.reserver(h, debut, fin, nb);
+
+            refreshTable();
+            JOptionPane.showMessageDialog(this, "Réservation OK");
+
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erreur : " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, "Erreur: " + ex.getMessage());
         }
     }
 
-    private void refreshReservations() {
+    private void verifier() {
+        try {
+            Hebergement h = listHebergements.getSelectedValue();
+            LocalDate debut = LocalDate.parse(tfDebut.getText());
+            LocalDate fin = LocalDate.parse(tfFin.getText());
+
+            boolean ok = h.estDisponible(debut, fin);
+            JOptionPane.showMessageDialog(this, ok ? "Disponible" : "Indisponible");
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Erreur format date");
+        }
+    }
+
+    private void refreshTable() {
         tableModel.setRowCount(0);
         for (Reservation r : client.getReservations()) {
             tableModel.addRow(new Object[]{
-                    r.getId(),
-                    r.getStatut(),
-                    r.getDebut(),
-                    r.getFin(),
-                    String.format("%.2f", r.getPrixTotal())
+                    r.getId(), r.getStatut(), r.getDebut(), r.getFin(), r.getPrixTotal()
             });
         }
     }
 
-    private void annulerReservation() {
-        int row = table.getSelectedRow();
-        if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Sélectionne une réservation");
-            return;
-        }
-
-        // on lit l'id (optionnel, mais on garde ta logique d'annulation existante)
-        int id = (int) tableModel.getValueAt(row, 0);
-
-        // on appelle ta méthode existante: annulerReservation(Client, LocalDate)
-        // (elle annule la première réservation future du client)
-        Hebergement h = list.getSelectedValue();
-        if (h == null) {
-            JOptionPane.showMessageDialog(this, "Sélectionne aussi un hébergement dans la liste à gauche.");
-            return;
-        }
-
+    private void annuler() {
         try {
-            h.annulerReservation(client, LocalDate.now());
-            JOptionPane.showMessageDialog(this, "✅ Annulation demandée (id=" + id + ")");
-            refreshReservations();
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erreur : " + ex.getMessage());
-        }
+            int row = table.getSelectedRow();
+            if (row == -1) return;
+
+            Reservation r = client.getReservations().get(row);
+            r.annuler();
+
+            refreshTable();
+        } catch (Exception ignored) {}
     }
 
-    // ------------------ MAIN ------------------
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new BookingApp().setVisible(true));
     }
