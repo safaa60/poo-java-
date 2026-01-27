@@ -1,4 +1,4 @@
-package booking.users;
+package model.personnes;
 
 public abstract class Personne {
     protected String nom;
@@ -19,6 +19,6 @@ public abstract class Personne {
 
     @Override
     public String toString() {
-        return getTypePersonne() + ": " + prenom + " " + nom + " (" + email + ")";
+        return prenom + " " + nom + " <" + email + ">";
     }
 }
