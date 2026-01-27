@@ -4,6 +4,8 @@ public abstract class Personne {
     protected String nom;
     protected String prenom;
     protected String email;
+    protected String motDePasse;
+
 
     protected Personne(String nom, String prenom, String email) {
         this.nom = nom;
